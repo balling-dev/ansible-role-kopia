@@ -1,0 +1,22 @@
+# Copyright 2024 Kristoffer Winther Balling
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#
+# Molecule verify configuration for kopia
+
+---
+
+- name: "Verify"
+  hosts: "all"
+  become: true
+  gather_facts: false
+
+
+  tasks:
+    - name: Check if kopia returns a version
+      ansible.builtin.command:
+        cmd: kopia --version
+      environment:
+        PATH: "/bin:/usr/bin:/usr/local/bin"

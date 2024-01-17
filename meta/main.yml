@@ -1,0 +1,28 @@
+# Copyright 2024 Kristoffer Winther Balling
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#
+# Meta data for kopia
+
+---
+
+galaxy_info:
+  role_name: "kopia"
+  description: >-
+     Install and configure kopia - a cross-platform backup tool for Windows,
+     macOS & Linux with fast, incremental backups, client-side end-to-end
+     encryption, compression and data deduplication.
+  author: "balling_dev"
+  license: "MPL-2.0"
+  company: "none"
+  min_ansible_version: "2.12"
+  platforms:
+    - name: "Ubuntu"
+      versions:
+        - "jammy"
+  galaxy_tags:
+    - "kopia"
+
+dependencies: [ ]

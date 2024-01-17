@@ -1,0 +1,82 @@
+# Copyright 2024 Kristoffer Winther Balling
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#
+# Install file for kopia
+
+---
+- name: "install | Install OS dependencies"
+  ansible.builtin.apt:
+    pkg:
+      - "curl"
+      - "jq"
+    update_cache: true
+
+- name: "install | Lowercase version"
+  ansible.builtin.set_fact:
+    kopia_version: "{{ kopia_version | lower }}"
+  when: kopia_version is defined
+
+- block:
+    - name: "install | Get latest version"
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          curl -s \
+          https://api.github.com/repos/kopia/kopia/releases/latest | \
+          jq -r .name
+      args:
+        executable: "/bin/bash"
+      register: "cmd"
+      run_once: true
+      changed_when: "'molecule-notest' not in ansible_skip_tags"
+
+    - name: "install | Set version"
+      ansible.builtin.set_fact:
+        kopia_install_version: "{{ cmd.stdout }}"
+  when: kopia_version is undefined or kopia_version == "latest"
+
+- block:
+    - name: "install | Set version"
+      ansible.builtin.set_fact:
+        kopia_install_version: "{{ kopia_version }}"
+  when: kopia_version is defined and kopia_version != "latest"
+
+- name: "install | Print Version"
+  ansible.builtin.debug:
+    msg: "Installing version: {{ kopia_install_version }}"
+
+- name: "install | Set Download URL"
+  ansible.builtin.set_fact:
+    kopia_download_url: "\
+      https://github.com/kopia/kopia/releases/download/\
+      v{{ kopia_install_version }}/\
+      kopia-{{ kopia_install_version }}\
+      -linux-x64.tar.gz"
+
+- name: "install | Print Download URL"
+  ansible.builtin.debug:
+    msg: "Downloading: {{ kopia_download_url }}"
+
+- name: "install | Download"
+  ansible.builtin.get_url:
+    url: "{{ kopia_download_url }}"
+    dest: "/tmp/kopia.tar.gz"
+    mode: "0644"
+
+- name: "install | Extract"
+  ansible.builtin.unarchive:
+    src: "/tmp/kopia.tar.gz"
+    dest: "/tmp"
+    remote_src: true
+
+- name: "install | Install"
+  ansible.builtin.copy:
+    remote_src: true
+    src: "/tmp/kopia-{{ kopia_install_version }}-linux-x64/kopia"
+    dest: "/usr/local/bin/kopia"
+    owner: "root"
+    group: "root"
+    mode: "0755"
